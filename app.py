@@ -15,7 +15,7 @@ import torch
 apikey = os.getenv('GOOGLE_GEMINI_API_KEY')  # Set as env var
 
 # Configure Gemini API for drafting (free)
-genai_ext.configure(api_key=st.secrets.get('GOOGLE_GEMINI_API_KEY'))
+genai_ext.configure(api_key=apikey)
 llm_model = genai_ext.GenerativeModel('gemini-1.5-flash')
 
 # Real classifiers
@@ -152,12 +152,6 @@ class HumanLikeChatbot:
 
 # Streamlit app
 st.title("HumanLike Chatbot with Emotions and E Score")
-
-# Initialize chatbot instance
-if 'bot' not in st.session_state:
-    st.session_state.bot = HumanLikeChatbot()
-
-bot = st.session_state.bot
 
 # Initialize session state
 if 'history' not in st.session_state:
