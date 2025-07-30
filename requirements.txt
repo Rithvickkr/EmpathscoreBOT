@@ -1,0 +1,4 @@
+google-generativeai
+transformers
+google-cloud-aiplatform
+streamlit
