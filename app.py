@@ -15,7 +15,7 @@ import torch
 apikey = os.getenv('GOOGLE_GEMINI_API_KEY')  # Set as env var
 
 # Configure Gemini API for drafting (free)
-genai.configure(api_key=st.secrets.get('GOOGLE_GEMINI_API_KEY'))
+genai_ext.configure(api_key=st.secrets.get('GOOGLE_GEMINI_API_KEY'))
 llm_model = genai_ext.GenerativeModel('gemini-1.5-flash')
 
 # Real classifiers
