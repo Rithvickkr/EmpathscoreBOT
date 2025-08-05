@@ -3,3 +3,4 @@ transformers
 google-cloud-aiplatform
 streamlit
 torch
+gradio

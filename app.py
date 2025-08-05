@@ -6,13 +6,8 @@ import google.generativeai as genai_ext
 from google.cloud import aiplatform
 from transformers import pipeline
 from google.genai import types
-import streamlit as st
-import os
-import torch
-
-
-# API Key setup (environment se le, secure)
-apikey = os.getenv('GOOGLE_GEMINI_API_KEY')  # Set as env var
+import gradio as gr
+apikey = "YOUR_GEMINI_API_KEY_HERE"  # Replace or use os.getenv if secret
 
 # Configure Gemini API for drafting (free)
 genai_ext.configure(api_key=apikey)
@@ -110,7 +105,7 @@ class HumanLikeChatbot:
                 self.irritation_level = max(0, self.irritation_level - 0.1)
 
             # Draft response from LLM based on bot's mood
-            prompt = f"""User said: "{clean_message}" | User Mood: {user_emotion} | Bot Mood: {self.bot_mood} | History: {self.history[-2:]} → Reply as a  Hinglish chatbot , based on this {self.bot_mood}, human-like, no tips or instructions:"""
+            prompt = f"""User said: "{clean_message}" | User Mood: {user_emotion} | Bot Mood: {self.bot_mood} | History: {self.history[-2:]} → Reply as a  Hinglish chatbot , based on this {self.bot_mood}, human-like, no tips or instructions JUST LIKE YOU ARE A HUMAN WITH FEELINGS AND SENSES:"""
             llm_response = llm_model.generate_content(prompt)
             draft = llm_response.text.strip()
 
@@ -141,40 +136,30 @@ class HumanLikeChatbot:
             # if R > 0:
             #     full_resp += f" Yaad hai pehle {self.history[-1][:20]} pe feel kiya tha?"
 
-            # Add pause for realism (in Streamlit, we can use st.spinner)
-            with st.spinner("..."):
-                time.sleep(random.uniform(1, 2.5))
+            time.sleep(random.uniform(1, 2.5))  # Pause for realism
 
             self.history.append(clean_message)
-            return f"{full_resp} (E Score: {score:.2f})"
+            return full_resp + f" (E Score: {score:.2f})"
         except Exception as e:
             return f"Error aaya bhai: {str(e)}. Endpoint ya auth check kar."
 
-# Streamlit app
-st.title("HumanLike Chatbot with Emotions and E Score")
+# Gradio app
+def chat(message, history):
+    if history is None:
+        history = []
+    response = bot.respond(message)
+    history.append((message, response))
+    return "", history
 
-# Initialize session state
-if 'history' not in st.session_state:
-    st.session_state.history = []
-if 'bot_mood' not in st.session_state:
-    st.session_state.bot_mood = "neutral"
-if 'irritation_level' not in st.session_state:
-    st.session_state.irritation_level = 0
+bot = HumanLikeChatbot()
 
-# Display chat history
-for msg in st.session_state.history:
-    with st.chat_message(msg["role"]):
-        st.write(msg["content"])
+with gr.Blocks(title="HumanLike Chatbot") as demo:
+    gr.Markdown("<h1 style='text-align: center;'>HumanLike Chatbot with Emotions and E Score</h1>")
+    chatbot = gr.Chatbot(height=400)
+    msg = gr.Textbox(label="Tu:", placeholder="Type your message here...")
+    clear = gr.Button("Clear")
 
-# User input
-user_input = st.chat_input("Tu:")
-if user_input:
-    with st.chat_message("user"):
-        st.write(user_input)
-    st.session_state.history.append({"role": "user", "content": user_input})
+    msg.submit(chat, [msg, chatbot], [msg, chatbot])
+    clear.click(lambda: None, None, chatbot, queue=False)
 
-    # Get response
-    response = bot.respond(user_input)
-    with st.chat_message("bot"):
-        st.write(response)
-    st.session_state.history.append({"role": "bot", "content": response})
+demo.launch(share=True)
